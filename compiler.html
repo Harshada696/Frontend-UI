@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduCode - Offline IDE</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:Segoe UI, Tahoma, Verdana, sans-serif;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      height:100vh; overflow:hidden;
+    }
+    .container { display:flex; height:100%; }
+    .sidebar {
+      width:280px; background:#2c3e50; color:#fff;
+      padding:20px; overflow:auto;
+    }
+    .sidebar .logo { font-size:1.5rem; margin-bottom:20px; text-align:center; }
+    .language-selector button {
+      width:100%; padding:8px; margin-bottom:8px;
+      border:none; border-radius:4px;
+      font-size:0.95rem; cursor:pointer;
+      background:rgba(255,255,255,0.1); color:#fff;
+      transition:background 0.3s;
+    }
+    .language-btn.active, .language-selector button:hover {
+      background:#4CAF50;
+    }
+    .template-container { margin-top:20px; }
+    .template-container h4 { margin-bottom:8px; }
+    .template-btn {
+      width:100%; margin-bottom:6px;
+      padding:6px; border:none; border-radius:4px;
+      font-size:0.9rem; cursor:pointer;
+      background:rgba(255,255,255,0.1); color:#fff;
+      transition:background 0.3s;
+    }
+    .template-btn:hover { background:#2980b9; }
+
+    .file-item {
+      padding:6px; background:rgba(255,255,255,0.1);
+      margin-bottom:4px; border-radius:4px;
+      cursor:pointer;
+    }
+    .file-item:hover { background:#3498db; }
+    .file-item.active { background:#16a085; }
+
+    .main-content { flex:1; display:flex; flex-direction:column; }
+    .toolbar {
+      background:#34495e; padding:10px;
+      display:flex; gap:10px; align-items:center;
+    }
+    .filename-input {
+      flex:1; padding:6px 8px; border:none; border-radius:4px;
+      font-size:0.95rem;
+    }
+    .btn-group button {
+      margin-left:4px; padding:6px 12px;
+      border:none; border-radius:4px; cursor:pointer;
+      font-size:0.9rem; transition:background 0.3s;
+    }
+    .btn-primary { background:#4CAF50; color:#fff; }
+    .btn-primary:hover { background:#45a049; }
+    .btn-secondary { background:#2980b9; color:#fff; }
+    .btn-secondary:hover { background:#1f618d; }
+    .btn-danger { background:#c0392b; color:#fff; }
+    .btn-danger:hover { background:#922b21; }
+
+    .editor-container { flex:1; display:flex; padding:10px; overflow:hidden; }
+    .editor {
+      flex:1; padding:10px; font-family: monospace;
+      font-size:0.9rem; border:none; border-radius:4px;
+      resize:none; outline:none;
+    }
+    .output-container {
+      flex:1; margin-left:10px; padding:10px; background:#ecf0f1;
+      border-radius:4px; font-family: monospace;
+      font-size:0.9rem; overflow:auto;
+      white-space:pre-wrap; line-height:1.4;
+    }
+    .ai-helper {
+      position:absolute; bottom:20px; right:20px;
+      background:#e67e22; padding:10px 14px;
+      border-radius:50px; color:#fff; cursor:pointer;
+      box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    }
+    .ai-popup {
+      position:absolute; bottom:80px; right:20px;
+      width:300px; background:#fff; border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.3);
+      padding:15px; display:none; z-index:10;
+    }
+    .ai-popup.active { display:block; }
+    .ai-popup h4 { margin-bottom:12px; }
+    .ai-popup p { font-size:0.9rem; margin-bottom:10px; }
+    .ai-popup button {
+      padding:6px 8px; margin:4px 2px; border:none;
+      border-radius:4px; cursor:pointer; font-size:0.85rem;
+    }
+    .status-bar {
+      background:#34495e; color:#fff; padding:6px 12px;
+      display:flex; justify-content:space-between;
+      font-size:0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="logo">📚 EduCode</div>
+      <div class="language-selector">
+        <button class="language-btn active" onclick="switchLanguage(event,'python')">🐍 Python</button>
+        <button class="language-btn" onclick="switchLanguage(event,'javascript')">🟨 JavaScript</button>
+        <button class="language-btn" onclick="switchLanguage(event,'html')">🌐 HTML/CSS</button>
+      </div>
+      <div class="template-container">
+        <h4>📋 Templates</h4>
+        <button class="template-btn" onclick="loadTemplate('hello-world')">Hello World</button>
+        <button class="template-btn" onclick="loadTemplate('calculator')">Calculator</button>
+        <button class="template-btn" onclick="loadTemplate('loops')">Loops</button>
+        <button class="template-btn" onclick="loadTemplate('functions')">Functions</button>
+      </div>
+      <div class="file-explorer">
+        <h4>📁 Files</h4>
+        <div id="file-list"></div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="toolbar">
+        <input type="text" id="filename" class="filename-input" value="main.py" />
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="runCode()">▶️ Run</button>
+          <button class="btn btn-secondary" onclick="saveFile()">💾 Save</button>
+          <button class="btn btn-danger" onclick="clearOutput()">🗑️ Clear</button>
+        </div>
+      </div>
+      <div class="editor-container">
+        <textarea id="code-editor" class="editor" placeholder="Start coding here..."></textarea>
+        <div class="output-container" id="output">
+Welcome to EduCode Output Console!
+Ready to execute your code...
+        </div>
+        <div class="ai-helper" onclick="toggleAI()">🤖 AI Help</div>
+        <div class="ai-popup" id="ai-popup">
+          <h4>🤖 AI Code Assistant</h4>
+          <p id="ai-analysis"><strong>Analysis:</strong> Click "Analyze Code" or get a suggestion!</p>
+          <button class="btn btn-primary" onclick="analyzeCode()">🔍 Analyze Code</button>
+          <button class="btn btn-secondary" onclick="getCodeSuggestion()">💡 Suggestion</button>
+          <button class="btn btn-danger" onclick="toggleAI()">✖️ Close</button>
+        </div>
+      </div>
+      <div class="status-bar">
+        <span id="language-status">Language: Python</span>
+        <span id="line-count">Lines: 0</span>
+        <span>🌍 Offline Mode</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let currentLanguage = 'python';
+      let files = {};
+      let currentFile = 'main.py';
+
+      const templates = {
+        python: { 'hello-world':'print("Hello, World!")','calculator':'def calc():\n  a=float(input("A: "))\n  b=float(input("B: "))\n  print(a+b)\ncalc()','loops':'for i in range(5): print(i)','functions':'def square(x):return x*x\nprint(square(5))' },
+        javascript: { 'hello-world':'console.log("Hello, World!");','calculator':'let a=1,b=2; console.log(a+b);','loops':'for(let i=0;i<5;i++) console.log(i)','functions':'const sq=x=>x*x; console.log(sq(5));' },
+        html: { 'hello-world':'<h1>Hello, World!</h1>','calculator':'<script>let a=1,b=2;console.log(a+b);</script>','loops':'<script>for(let i=0;i<5;i++)console.log(i);</script>','functions':'<script>const sq=x=>x*x;console.log(sq(5));</script>' }
+      };
+
+      const aiSuggestions = {
+        python:["Use f-strings","Add error handling","Break into functions"],
+        javascript:["Use const/let","Use arrow funcs","Add try/catch"],
+        html:["Use semantic tags","Add alt to <img>","Add viewport meta"]
+      };
+
+      function switchLanguage(event, lang) {
+        document.querySelectorAll('.language-btn').forEach(b=>b.classList.remove('active'));
+        event.target.classList.add('active');
+        currentLanguage = lang;
+        document.getElementById('language-status').textContent = `Language: ${lang.charAt(0).toUpperCase() + lang.slice(1)}`;
+        const ext = { python:'.py', javascript:'.js', html:'.html' }[lang];
+        currentFile = `main${ext}`;
+        document.getElementById('filename').value = currentFile;
+        document.getElementById('code-editor').value = '';
+        updateLineCount();
+        updateFileList();
+      }
+
+      function loadTemplate(name) {
+        const t = templates[currentLanguage]?.[name];
+        if(t) {
+          document.getElementById('code-editor').value = t;
+          updateLineCount();
+        }
+      }
+
+      function runCode() {
+        const code = document.getElementById('code-editor').value;
+        const out = document.getElementById('output');
+        out.textContent = `> Running ${currentLanguage} code...\n\n`;
+        setTimeout(()=>{
+          if(currentLanguage==='python') simulatePython(code);
+          else if(currentLanguage==='javascript') simulateJS(code);
+          else if(currentLanguage==='html') simulateHTML(code);
+        },300);
+      }
+
+      function simulatePython(code) {
+        const out=document.getElementById('output');
+        const matches = code.match(/print\((.*?)\)/g);
+        if(matches) matches.forEach(m=>out.textContent += eval(m.replace('print',''))+"\n");
+        out.textContent += "\n> Python exec completed.";
+      }
+
+      function simulateJS(code) {
+        const out=document.getElementById('output');
+        const matches = code.match(/console\.log\((.*?)\)/g);
+        if(matches) matches.forEach(m=>out.textContent += eval(m.replace('console.log',''))+"\n");
+        out.textContent += "\n> JS exec completed.";
+      }
+
+      function simulateHTML(code) {
+        const out=document.getElementById('output');
+        out.textContent = "> HTML preview below:\n";
+        const iframe = document.createElement('iframe');
+        iframe.style.width='100%'; iframe.style.height='200px'; iframe.style.border='1px solid #ccc';
+        out.appendChild(iframe);
+        iframe.contentDocument.open(); iframe.contentDocument.write(code); iframe.contentDocument.close();
+      }
+
+      function saveFile() {
+        const fname=document.getElementById('filename').value;
+        files[fname]=document.getElementById('code-editor').value;
+        currentFile=fname;
+        document.getElementById('output').textContent += `\n> '${fname}' saved.`;
+        updateFileList();
+      }
+
+      function updateFileList() {
+        const list=document.getElementById('file-list');
+        list.textContent='';
+        Object.keys(files).forEach(f=>{
+          const d=document.createElement('div');
+          d.className='file-item'; d.textContent=f;
+          d.onclick=()=>{document.getElementById('code-editor').value=files[f];document.getElementById('filename').value=f;currentFile=f;updateLineCount();updateFileList();};
+          if(f===currentFile) d.classList.add('active');
+          list.appendChild(d);
+        });
+      }
+
+      function clearOutput(){ document.getElementById('output').textContent="Output cleared.\n"; }
+      function toggleAI(){ document.getElementById('ai-popup').classList.toggle('active'); }
+
+      function analyzeCode(){
+        const code=document.getElementById('code-editor').value;
+        const analysis=[];
+        if(!code) analysis.push("No code!");
+        else {
+          if(currentLanguage==='python'&&!code.includes('def')) analysis.push("Consider using functions.");
+          if(code.split('\n').length>15) analysis.push("Consider breaking this into multiple files.");
+        }
+        document.getElementById('ai-analysis').innerHTML="<strong>Analysis:</strong><br>"+analysis.join("<br>");
+      }
+
+      function getCodeSuggestion(){
+        const s=aiSuggestions[currentLanguage];
+        document.getElementById('ai-analysis').innerHTML="💡 "+s[Math.floor(Math.random()*s.length)];
+      }
+
+      function updateLineCount(){
+        document.getElementById('line-count').textContent = "Lines: "+document.getElementById('code-editor').value.split('\n').length;
+      }
+
+      document.getElementById('code-editor').addEventListener('input', updateLineCount);
+
+      // init
+      updateLineCount(); updateFileList();
+    });
+  </script>
+</body>
+</html>
