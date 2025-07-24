@@ -1,3 +1,3 @@
 ## 🔐 Login Page Preview
 
-![Login UI](assets/loginPage_Preview.png)
+![Login UI](loginPage_Preview.png)
