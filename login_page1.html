@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background-image: url('https://images.unsplash.com/photo-1553095066-5014bc7b7f2d?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8bGlnaHQlMjB3YWxsfGVufDB8fDB8fHww');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 40px 30px;
+      width: 350px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      color: white;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-container:hover {
+      box-shadow: 0 0 10px #ffffff,
+                  0 0 20px #ffffff,
+                  0 0 40px #ffffff,
+                  0 0 60px #ffffff;
+      transition: all 0.10s ease-in-out;
+    }
+
+    .login-container h2 {
+      margin-bottom: 25px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      border: none;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .input-group i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #fff;
+    }
+
+    .options {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .options input {
+      margin-right: 5px;
+    }
+
+    .login-btn {
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      outline: none;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .login-btn::before {
+      content: "";
+      position: absolute;
+      top: var(--y, 50%);
+      left: var(--x, 50%);
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, #00f0ff 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-btn:hover::before {
+      opacity: 1;
+    }
+
+    .login-btn:hover {
+      transform: scale(1.03);
+    }
+
+    .login-btn:active {
+      transform: scale(0.96);
+      box-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+    }
+
+    .register-link {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .register-link a {
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    /* 🔥 Fading Afterglow Circle */
+    .glow-follow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #00f0ff88 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- 💡 Glow Follows Mouse -->
+  <div class="glow-follow" id="glowEffect"></div>
+
+  <div class="login-container">
+    <h2>Login</h2>
+    
+    <div class="input-group">
+      <input type="text" placeholder="Username">
+      <i class="fas fa-user"></i>
+    </div>
+
+    <div class="input-group">
+      <input type="password" placeholder="Password">
+      <i class="fas fa-lock"></i>
+    </div>
+
+    <div class="options">
+      <label><input type="checkbox"> Remember me</label>
+      <a href="#" style="color: white;">Forgot password?</a>
+    </div>
+
+    <button class="login-btn" id="loginBtn">Login</button>
+
+    <div class="register-link">
+      Don't have an account? <a href="#">Register</a>
+    </div>
+  </div>
+
+  <!-- ✨ JavaScript for Mouse-Following Glow with Fading Afterglow -->
+  <script>
+    const glow = document.getElementById('glowEffect');
+
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = `${e.clientX}px`;
+      glow.style.top = `${e.clientY}px`;
+      glow.style.opacity = 1;
+
+      // Optional: Fade out after brief idle time
+      clearTimeout(window._glowTimeout);
+      window._glowTimeout = setTimeout(() => {
+        glow.style.opacity = 0;
+      }, 50);
+    });
+  </script>
+
+</body>
+</html>
